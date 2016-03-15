@@ -41,8 +41,8 @@ then
       echo Found $BASE_BIN in cache.
    fi
 else
-   echo Getting $BASE_BIN
-   s3simple get $READY_BIN $CACHE_DIR/$READY_BIN
+   echo Getting $READY_BIN
+   s3simple get $READY_BIN $CACHE_DIR/$BASE_BIN
    if verify_md5
    then
       echo Got it.
