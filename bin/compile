@@ -34,12 +34,9 @@ verify_md5() {
 
 BASE_BIN=`basename $READY_BIN`
 . bin/def_s3simple
-if [ -e $CACHE_DIR/$BASE_BIN ]
+if ( [ -e $CACHE_DIR/$BASE_BIN ] && verify_md5 )
 then
-   if verify_md5
-   then
-      echo Found $BASE_BIN in cache.
-   fi
+   echo Found $BASE_BIN in cache with correct md5 hash.
 else
    echo Getting $READY_BIN
    s3simple get $READY_BIN $CACHE_DIR/$BASE_BIN
