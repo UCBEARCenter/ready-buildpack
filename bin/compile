@@ -1,0 +1,57 @@
+#!/bin/bash
+# def_s3simple as written requires bash, /bin/sh is only dash.
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+RUN_DIR=`pwd`
+
+indent() {
+   sed -u 's/^/       /'
+}
+
+echo '     -> Running bin/compile.'
+echo Current directory is $RUN_DIR | indent
+echo BUILD_DIR is $BUILD_DIR | indent
+# CACHE_DIR in experience is /app/tmp/cache .
+echo CACHE_DIR is $CACHE_DIR | indent
+echo ENV_DIR is $ENV_DIR | indent
+# BUILD_DIR will be archived into a slug.
+# CACHE_DIR will persist between builds.
+# ENV_DIR is a directory containing environment values in file content.
+
+mkdir -p $CACHE_DIR
+
+READY_BIN=`cat $ENV_DIR/READY_BIN`
+READY_MD5=`cat $ENV_DIR/READY_MD5`
+export AWS_ACCESS_KEY_ID=`cat $ENV_DIR/S3_KEY`
+export AWS_SECRET_ACCESS_KEY=`cat $ENV_DIR/S3_SECRET`
+
+verify_md5() {
+   [ "`md5sum $CACHE_DIR/$BASE_BIN`" = "$READY_MD5" ]
+}
+
+BASE_BIN=`basename $READY_BIN`
+. bin/def_s3simple
+if [ -e $CACHE_DIR/$BASE_BIN ]
+then
+   if verify_md5
+   then
+      echo Found $BASE_BIN in cache.
+   fi
+else
+   echo Getting $BASE_BIN
+   s3simple get $READY_BIN $CACHE_DIR/$READY_BIN
+   if verify_md5
+   then
+      echo Got it.
+   else
+      echo Retrieved $BASE_BIN does not match expected md5 sum.
+      exit 1
+   fi
+fi | indent
+
+echo Unpacking $BASE_BIN | indent
+bunzip2 < $CACHE_DIR/$BASE_BIN | (cd $BUILD_DIR; tar xvf -) | indent
+# base_bin was ready to go, so we are done.
+
+exit 0
