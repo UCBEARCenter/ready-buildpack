@@ -54,6 +54,13 @@ fi | indent
 
 echo Unpacking $BASE_BIN | indent
 bunzip2 < $CACHE_DIR/$BASE_BIN | (cd $BUILD_DIR; tar xvf -) | indent
-# base_bin was ready to go, so we are done.
+
+#run initscript if one is defined.
+if [ -e $ENV_DIR/READY_INIT ]
+then
+   READY_INIT=`cat $ENV_DIR/READY_INIT`
+   cd $BUILD_DIR
+   exec $READY_INIT
+fi
 
 exit 0
