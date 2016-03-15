@@ -5,6 +5,8 @@ CACHE_DIR=$2
 ENV_DIR=$3
 RUN_DIR=`pwd`
 
+set -e
+
 indent() {
    sed -u 's/^/       /'
 }
@@ -27,7 +29,7 @@ export AWS_ACCESS_KEY_ID=`cat $ENV_DIR/S3_KEY`
 export AWS_SECRET_ACCESS_KEY=`cat $ENV_DIR/S3_SECRET`
 
 verify_md5() {
-   [ "`md5sum $CACHE_DIR/$BASE_BIN`" = "$READY_MD5" ]
+   [ "`md5sum $CACHE_DIR/$BASE_BIN | awk '{print $1}'`" = "$READY_MD5" ]
 }
 
 BASE_BIN=`basename $READY_BIN`
